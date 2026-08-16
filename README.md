@@ -7,6 +7,14 @@ agent's model, effort, lifecycle status, and estimated cost.
 Everything runs on your computer at `127.0.0.1`. Agent Farm does not send your
 data to an Agent Farm cloud service, change Codex settings, or control agents.
 
+## Demo
+
+[![Watch the 29-second Codex Agent Farm demo](docs/assets/agent-farm-demo-poster.jpg)](docs/assets/agent-farm-demo.mp4)
+
+Watch the [29-second demo](docs/assets/agent-farm-demo.mp4) to see live hierarchy
+monitoring, model and effort identity checks, lifecycle and cost details, light
+and dark themes, and task switching.
+
 ## Requirements
 
 - macOS
