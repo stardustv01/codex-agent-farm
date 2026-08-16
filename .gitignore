@@ -1,0 +1,27 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+.env
+.env.*
+!.env.example
+.agent-farm/
+.agent-farm-backups/
+*.tsbuildinfo
+*.d.mts
+*.d.mts.map
+*.mjs.map
+
+# Generated JavaScript copies of TypeScript evidence sources.
+/evidence/phase-e/*.mjs
+/evidence/phase-f/real-runtime-acceptance.mjs
+/evidence/phase-g/real-runtime-recovery.mjs
+
+# Generated release output and local creative-generation workspaces.
+*.tgz
+/release/
+/artifacts/

@@ -1,0 +1,47 @@
+{
+  "schema": "row22-contrast-audit-v1",
+  "sourceDigest": "4af56176094dc8ee95c69aaa68347099e16b59d58412b5e7892a4f8a4d419831",
+  "method": "WCAG relative-luminance token audit from apps/web/src/production-hierarchy.css",
+  "thresholds": {
+    "normalTextAA": 4.5,
+    "largeTextAA": 3
+  },
+  "pairs": [
+    {"theme":"light","foreground":"text","background":"page","ratio":12.29,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"text","background":"panel","ratio":13.37,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"muted","background":"panel","ratio":5.24,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"faint","background":"panel","ratio":4.86,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"sol","background":"sol-soft","ratio":4.91,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"luna","background":"luna-soft","ratio":5.48,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"success","background":"success-soft","ratio":4.64,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"warning","background":"warning-soft","ratio":4.92,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"danger","background":"danger-soft","ratio":5.68,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"text","background":"page","ratio":14.73,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"text","background":"panel","ratio":12.97,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"muted","background":"panel","ratio":7.47,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"faint","background":"panel","ratio":5.35,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"faint","background":"raised","ratio":4.82,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"sol","background":"sol-soft","ratio":5.78,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"luna","background":"luna-soft","ratio":5.62,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"success","background":"success-soft","ratio":5.82,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"warning","background":"warning-soft","ratio":5.59,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"danger","background":"danger-soft","ratio":6.22,"normalTextAA":"PASS"},
+    {"theme":"light","foreground":"primary-text","background":"sol","ratio":5.62,"normalTextAA":"PASS"},
+    {"theme":"dark","foreground":"primary-text","background":"sol","ratio":7.61,"normalTextAA":"PASS"}
+  ],
+  "browserEvidence": {
+    "outlineTreeKeyboard": "PASS",
+    "textZoom200Percent": "PASS",
+    "darkLight": "PASS",
+    "reducedMotion": "PASS",
+    "consoleEntries": 0
+  },
+  "voiceOver": {
+    "status": "DEFERRED_BY_PRODUCT_OWNER",
+    "requiredForLocalV1": false,
+    "decisionDate": "2026-08-12",
+    "reason": "VoiceOver certification is not required for Local V1; no transcript is claimed and the deferral is not represented as a PASS."
+  },
+  "gate": "PASS",
+  "gateReason": "Superseded by exact built Chromium rendered audit in row22-exact-built-rendered-contrast.json."
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "row22-rendered-contrast-v1",
+  "sourceBoundary": "current-dev-HMR-after-bounded-eyebrow-fix",
+  "viewport": {
+    "width": 1280,
+    "height": 1086
+  },
+  "light": {
+    "visibleTextElements": 339,
+    "failures": 0,
+    "minimumRatio": 4.59,
+    "threshold": 4.5
+  },
+  "dark": {
+    "visibleTextElements": 339,
+    "failures": 0,
+    "minimumRatio": 4.82,
+    "threshold": 4.5
+  },
+  "focus": {
+    "indicatorRatio": 3.06,
+    "threshold": 3,
+    "outlineWidthPx": 3,
+    "pass": true
+  },
+  "nonTextBoundary": "Decorative/control borders are not used as the sole control identifier; visible text and shapes remain present. Focus indicator independently meets 3:1.",
+  "voiceOver": "deferred-by-product-owner"
+}

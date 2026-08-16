@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "recordStatus": "template",
+  "overallStatus": "HOLD",
+  "observedAt": null,
+  "operator": null,
+  "environment": {
+    "publicOrigin": null,
+    "releaseRevision": null,
+    "executableSourceManifestSha256": null,
+    "mcpResourceSha256": null,
+    "databaseSchemaVersion": null,
+    "codexVersion": null,
+    "codexBinarySha256": null,
+    "chatgptHostVersion": null,
+    "oauthProviderName": null,
+    "builtInBrowserProduct": null,
+    "builtInBrowserVersion": null,
+    "builtInBrowserProvenanceEvidenceRefs": []
+  },
+  "privacyChecks": {
+    "status": "HOLD",
+    "secretsAbsent": null,
+    "cookiesAbsent": null,
+    "authorizationCodesAbsent": null,
+    "oauthSidOrJtiAbsent": null,
+    "sourceIdsAbsent": null,
+    "promptsOrMessagesAbsent": null,
+    "localPathsAbsent": null,
+    "toolArgumentsAbsent": null,
+    "publicIdsStoredAsOneWayDigestsOnly": null,
+    "evidenceRefs": []
+  },
+  "principals": {
+    "principalA": {
+      "identityAlias": "A",
+      "standaloneAgentSessionDigest": null,
+      "mcpAgentSessionDigest": null,
+      "mcpProtocolSessionDigest": null,
+      "secureCookieAttributesPassed": null,
+      "tokenExposureScanPassed": null,
+      "evidenceRefs": []
+    },
+    "principalB": {
+      "identityAlias": "B",
+      "standaloneAgentSessionDigest": null,
+      "mcpAgentSessionDigest": null,
+      "mcpProtocolSessionDigest": null,
+      "secureCookieAttributesPassed": null,
+      "tokenExposureScanPassed": null,
+      "evidenceRefs": []
+    }
+  },
+  "gates": {
+    "deploymentIdentityAndHttps": {
+      "status": "HOLD",
+      "healthzStatus": null,
+      "readyStatus": null,
+      "certificateHostnameValid": null,
+      "certificateExpiry": null,
+      "httpDowngradeRejected": null,
+      "originAndHostPolicyPassed": null,
+      "evidenceRefs": [],
+      "notes": []
+    },
+    "liveOAuthStandalone": {
+      "status": "HOLD",
+      "principalACompleted": null,
+      "principalBCompleted": null,
+      "pkceCallbackPassed": null,
+      "refreshStableSessionPassed": null,
+      "logoutRevocationPassed": null,
+      "concurrentIsolationPassed": null,
+      "nonEnumeratingFailuresPassed": null,
+      "evidenceRefs": [],
+      "notes": []
+    },
+    "chatgptMcp": {
+      "status": "HOLD",
+      "developerModeEnabled": null,
+      "connectionRegistered": null,
+      "newChatTested": null,
+      "discoveredTools": [],
+      "exactFourToolsPassed": null,
+      "controlToolsAbsent": null,
+      "principalACompleted": null,
+      "principalBCompleted": null,
+      "concurrentIsolationPassed": null,
+      "privateFieldScanPassed": null,
+      "evidenceRefs": [],
+      "notes": []
+    },
+    "requiredHierarchyAndIdentity": {
+      "status": "HOLD",
+      "exactEdgesPassed": null,
+      "restAndMcpTopologyMatched": null,
+      "agents": {
+        "Main": {
+          "parent": "NOT_APPLICABLE",
+          "parentReason": "Main is the selected root agent.",
+          "requestedModel": "NOT_APPLICABLE",
+          "requestedEffort": "NOT_APPLICABLE",
+          "requestedReason": "No explicit model or effort was requested for Main.",
+          "observedModel": null,
+          "observedEffort": null,
+          "provider": null,
+          "verification": null
+        },
+        "Dirac": {
+          "parent": "Main",
+          "requestedModel": "Sol",
+          "requestedEffort": "High",
+          "observedModel": null,
+          "observedEffort": null,
+          "provider": null,
+          "verification": null
+        },
+        "Rhea": {
+          "parent": "Dirac",
+          "requestedModel": "Luna",
+          "requestedEffort": "Max",
+          "observedModel": null,
+          "observedEffort": null,
+          "provider": null,
+          "verification": null
+        },
+        "Kuhn": {
+          "parent": "Dirac",
+          "requestedModel": "Sol",
+          "requestedEffort": "Medium",
+          "observedModel": null,
+          "observedEffort": null,
+          "provider": null,
+          "verification": null
+        },
+        "Noether": {
+          "parent": "Rhea",
+          "requestedModel": "Sol",
+          "requestedEffort": "Low",
+          "observedModel": null,
+          "observedEffort": null,
+          "provider": null,
+          "verification": null
+        }
+      },
+      "evidenceRefs": [],
+      "notes": []
+    },
+    "inlineAndFullscreen": {
+      "status": "HOLD",
+      "builtInBrowserProvenancePassed": null,
+      "inlineRendered": null,
+      "inlineNoNestedScrollOrClipping": null,
+      "fullscreenRendered": null,
+      "composerUsable": null,
+      "statePreservedAcrossCloseReopen": null,
+      "sessionStableAcrossRemount": null,
+      "statusStatesDistinguishable": null,
+      "consoleAndCspClean": null,
+      "viewports": {
+        "narrowMobilePassed": null,
+        "tabletPassed": null,
+        "desktopPassed": null
+      },
+      "themes": {
+        "lightPassed": null,
+        "darkPassed": null
+      },
+      "textResize200PercentPassed": null,
+      "evidenceRefs": [],
+      "notes": []
+    },
+    "accessibility": {
+      "status": "HOLD",
+      "surfaces": {
+        "standalone": {
+          "keyboardPassed": null,
+          "focusOrderAndRestorePassed": null,
+          "voiceOverPassed": null,
+          "liveStatusAnnouncementsPassed": null,
+          "wcagAaContrastPassed": null,
+          "textResize200PercentPassed": null
+        },
+        "chatgptFullscreen": {
+          "keyboardPassed": null,
+          "focusOrderAndRestorePassed": null,
+          "voiceOverPassed": null,
+          "liveStatusAnnouncementsPassed": null,
+          "wcagAaContrastPassed": null,
+          "textResize200PercentPassed": null
+        }
+      },
+      "evidenceRefs": [],
+      "notes": []
+    },
+    "hostScale": {
+      "status": "HOLD",
+      "activeAgentCount": null,
+      "completedAgentCount": null,
+      "edgeCount": null,
+      "firstUsefulInlineRenderMs": null,
+      "fullscreenReadyMs": null,
+      "searchFilterResponseMs": null,
+      "branchExpandResponseMs": null,
+      "detailsOpenResponseMs": null,
+      "pageCount": null,
+      "returnedAgentCount": null,
+      "memorySnapshotMb": "NOT_EXPOSED",
+      "memorySnapshotReason": null,
+      "missingPublicIds": null,
+      "duplicatePublicIds": null,
+      "unstableOrderingObserved": null,
+      "droppedFramesObserved": null,
+      "freezeOrCrashObserved": null,
+      "unboundedRequestLoopObserved": null,
+      "consoleErrors": [],
+      "evidenceRefs": [],
+      "notes": []
+    },
+    "liveRecovery": {
+      "status": "HOLD",
+      "codexChildDropPerformed": null,
+      "disconnectedStateObserved": null,
+      "newConnectionEpochObserved": null,
+      "semanticProjectionStable": null,
+      "refreshAndFullscreenRemountPerformed": null,
+      "agentFarmServerRestartPerformed": null,
+      "agentSessionStableAcrossRefreshRemountRestart": null,
+      "duplicateEventDelta": null,
+      "duplicateSourceDelta": null,
+      "phantomActiveAgents": null,
+      "evidenceRefs": [],
+      "notes": []
+    },
+    "liveSecurity": {
+      "status": "HOLD",
+      "tokenNegativesPassed": null,
+      "callbackPkceNegativesPassed": null,
+      "csrfNegativesPassed": null,
+      "callerIdentitySubstitutionRejected": null,
+      "crossPrincipalReuseRejected": null,
+      "unknownAndMalformedIdsNonEnumerating": null,
+      "originHostForwardedHeaderNegativesPassed": null,
+      "controlDiscoveryAndCallsRejected": null,
+      "tokenBearingWidgetUrlsRejected": null,
+      "secretAndPrivateFieldScanPassed": null,
+      "evidenceRefs": [],
+      "notes": []
+    }
+  },
+  "critic": {
+    "model": "Sol High",
+    "reviewedAt": null,
+    "verdict": null,
+    "p0Count": null,
+    "p1Count": null,
+    "unresolvedFindings": [],
+    "evidenceRefs": []
+  },
+  "rollback": {
+    "status": "HOLD",
+    "tested": null,
+    "lastKnownGoodRevision": null,
+    "databaseBackupDigest": null,
+    "credentialRevocationReady": null,
+    "evidenceRefs": [],
+    "notes": []
+  },
+  "releaseVerdict": {
+    "status": "HOLD",
+    "reason": "Template only; all external evidence is still required.",
+    "approvedBy": null,
+    "approvedAt": null
+  }
+}

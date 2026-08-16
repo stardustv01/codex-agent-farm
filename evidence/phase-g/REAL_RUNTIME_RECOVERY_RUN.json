@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "recordStatus": "final",
+  "observedAt": "2026-08-09T18:56:05.845Z",
+  "runStartedAt": "2026-08-09T18:55:34.871Z",
+  "result": "PASS",
+  "command": "AGENT_FARM_REAL_CODEX_RECOVERY=1 AGENT_FARM_SOURCE_ROOT_ID=$PAIRED_ROOT_ID node --import tsx evidence/phase-g/real-runtime-recovery.mts",
+  "acceptanceScriptSha256": "e2146dcd6c77b5acde5c13ce04455b4152bf58047f3a9f29bd2abd2fb714b22e",
+  "sourceTreeManifestSha256BeforeArtifact": "d9351c69baef81d1799ea1ab3077101923878903b5f8bfa48a8dddb5345caa5e",
+  "sourceTreeManifestCommand": "rg --files -g '!evidence/**' -g '!docs/**' -g '!README.md' | LC_ALL=C sort | xargs shasum -a 256 | shasum -a 256",
+  "checkout": {
+    "branch": "codex/agent-farm",
+    "revision": null,
+    "state": "unborn branch; no commit exists"
+  },
+  "runtime": {
+    "codexVersion": "0.145.0",
+    "binarySha256": "1da3f4e0e96028b8a771814293c3033dafd1971f943f6c7e79b0897fe705f590",
+    "stateTransitions": ["unpaired", "connected", "disconnected", "connected"],
+    "disconnectedState": "disconnected",
+    "disconnectedConnectionState": "disconnected",
+    "epochChanged": true,
+    "childCount": 2
+  },
+  "projection": {
+    "initial": {
+      "agents": 89,
+      "edges": 88,
+      "events": 318,
+      "duplicateEventDelta": 0,
+      "duplicateSourceDelta": 0
+    },
+    "recovered": {
+      "agents": 89,
+      "edges": 88,
+      "events": 636,
+      "duplicateEventDelta": 0,
+      "duplicateSourceDelta": 0
+    },
+    "remounted": {
+      "agents": 89,
+      "edges": 88,
+      "events": 636,
+      "duplicateEventDelta": 0,
+      "duplicateSourceDelta": 0
+    },
+    "semanticProjection": {
+      "initialSha256": "ae2514796b6d75d51d7fc75792eef8e2c93c50d27c9385e200c2235cc9063e89",
+      "recoveredSha256": "ae2514796b6d75d51d7fc75792eef8e2c93c50d27c9385e200c2235cc9063e89",
+      "remountedSha256": "ae2514796b6d75d51d7fc75792eef8e2c93c50d27c9385e200c2235cc9063e89",
+      "initialEqualsRecovered": true,
+      "initialEqualsRemounted": true
+    },
+    "requiredBranchPresent": true,
+    "deterministicRebuild": true,
+    "eventCountNote": "The second epoch writes a new unique full-snapshot reconciliation event set; this is intentional journaling, not duplicate event keys."
+  },
+  "omitted": [
+    "source thread identifiers",
+    "rollout paths",
+    "prompts and messages",
+    "function-call arguments",
+    "credentials and OAuth values",
+    "child PIDs"
+  ]
+}

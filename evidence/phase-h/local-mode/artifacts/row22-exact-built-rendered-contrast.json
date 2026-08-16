@@ -1,0 +1,77 @@
+{
+  "schema": "row22-exact-built-rendered-contrast-v1",
+  "sourceDigest": "1890e94f2099336086364416bf4cb292986885ea1d234818e39d865af13d489f",
+  "manifestDigest": "ab62d8736a3681fb32dc71cfae4174bcf57de2a2b08798f8364c2151e0f4d1c4",
+  "mcpResourceDigest": "5c2e47ccec84f63d2c12e888646af98ca5a643d6fbedd7634f09145d8dc9d3d1",
+  "browser": "Codex in-app built-in Chromium",
+  "urlClass": "loopback static built bundle with strict public-v1 API",
+  "algorithm": "Computed CSS foreground and nearest composited ancestor backgrounds using sRGB alpha compositing and WCAG 2 relative luminance; normal text threshold 4.5, large text 3.0.",
+  "light": {
+    "failures": 0,
+    "minimum": 4.59,
+    "states": {
+      "default": {
+        "count": 345,
+        "failures": 0,
+        "minimum": 4.62
+      },
+      "selected": {
+        "count": 1,
+        "failures": 0,
+        "minimum": 13.37
+      },
+      "tinted": {
+        "count": 5,
+        "failures": 0,
+        "minimum": 4.59
+      }
+    },
+    "theme": "light",
+    "total": 351
+  },
+  "dark": {
+    "failures": 0,
+    "minimum": 4.82,
+    "states": {
+      "default": {
+        "count": 345,
+        "failures": 0,
+        "minimum": 4.82
+      },
+      "selected": {
+        "count": 1,
+        "failures": 0,
+        "minimum": 12.97
+      },
+      "tinted": {
+        "count": 5,
+        "failures": 0,
+        "minimum": 5.23
+      }
+    },
+    "theme": "dark",
+    "total": 351
+  },
+  "selected": {
+    "count": 7,
+    "failures": 0,
+    "minimum": 5.78
+  },
+  "dialog": {
+    "count": 0,
+    "note": "Local binding dialog unavailable in scale harness; dialog token pairs covered by source tests."
+  },
+  "disabled": {
+    "count": 0,
+    "note": "No disabled controls rendered in scale harness; disabled state not color-only and source semantics covered."
+  },
+  "focus": {
+    "outlineWidth": "3px",
+    "outlineOffset": "2px",
+    "ratio": 3.06,
+    "threshold": 3,
+    "pass": true
+  },
+  "voiceOver": "deferred-by-product-owner",
+  "result": "PASS"
+}

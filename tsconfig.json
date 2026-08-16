@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@agent-farm/codex-bridge": ["packages/codex-bridge/src/index.ts"],
+      "@agent-farm/contracts": ["packages/contracts/src/index.ts"],
+      "@agent-farm/mcp": ["packages/mcp/src/index.ts"],
+      "@agent-farm/store": ["packages/store/src/index.ts"]
+    }
+  }
+}

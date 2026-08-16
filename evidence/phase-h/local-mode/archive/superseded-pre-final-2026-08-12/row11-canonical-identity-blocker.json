@@ -1,0 +1,47 @@
+{
+  "schema": "row11-canonical-identity-blocker-v2",
+  "status": "BLOCKED",
+  "sourceDigest": "1890e94f2099336086364416bf4cb292986885ea1d234818e39d865af13d489f",
+  "buildManifestDigest": "ab62d8736a3681fb32dc71cfae4174bcf57de2a2b08798f8364c2151e0f4d1c4",
+  "mcpResourceDigest": "5c2e47ccec84f63d2c12e888646af98ca5a643d6fbedd7634f09145d8dc9d3d1",
+  "runtime": {
+    "codexVersion": "0.145.0",
+    "candidateCount": 12,
+    "selectedOrdinal": 12,
+    "windowSeconds": 90,
+    "connectionState": "connected",
+    "reconciliationState": "reconciled"
+  },
+  "projection": {
+    "publicAgentCount": 2,
+    "publicEdgeCount": 1,
+    "topology": "unnamed root -> Dirac",
+    "identityEvidenceCount": 0,
+    "sanitizedEventCount": 12,
+    "verification": "both projected agents unverified",
+    "canonicalBranch": "not proved: Rhea, Kuhn, and Noether were absent"
+  },
+  "identity": {
+    "requested": "not available for the requested four-agent branch in this window",
+    "observed": "not available under supported metadata-only reconciliation",
+    "reason": "Codex 0.145 app-server in this exact current task/window exposed only a root and one direct child through the supported metadata-only path; no identity-evidence records were written. This is a bounded runtime observation, not a universal protocol claim."
+  },
+  "durableTruth": {
+    "activeBindingCountBeforeCleanup": 1,
+    "activeBindingCountAfterCleanup": 0,
+    "runtimeClosed": true,
+    "databaseProjectionRetainedForEvidence": true
+  },
+  "artifacts": {
+    "sanitizedHarnessSha256": "e386a1f1a99640b5e4790e4456e35a91c2200ff62ad349014b7cbcae757e4cf0",
+    "harnessSha256": "ac6c497c48bdf97db9313e7ad7e8a48bf3f37604a632fbe1903bd2a2acb09779",
+    "artifactMode": "0600",
+    "rejectedPriorAttempts": "archived separately; not promoted"
+  },
+  "privacy": {
+    "rawIdentifiersEmitted": false,
+    "pathsEmitted": false,
+    "credentialsEmitted": false,
+    "privatePayloadsEmitted": false
+  }
+}

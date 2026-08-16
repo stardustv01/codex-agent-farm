@@ -1,0 +1,181 @@
+Agent Farm Local V1 G0 source manifest
+
+Captured: 2026-08-11 (Asia/Kolkata)
+Checkout: /Users/praveengupta/Desktop/Agent-farm V1/agent-farm
+Branch: codex/agent-farm (unborn; no commits)
+
+HISTORICAL SNAPSHOT — NOT CURRENT RELEASE EVIDENCE
+
+This append-only-style G0 inventory preserves the paths and aggregate hash that
+were true when captured. Some listed files were later moved into explicitly
+named archives. Do not resolve this list as a current filesystem manifest.
+Current authority: docs/LOCAL_V1_RELEASE_PLAN.md and
+evidence/phase-h/local-mode/FINAL_LOCAL_V1_ACCEPTANCE.md.
+
+This is a relative-path manifest of the current non-ignored Git candidates
+at the G0 capture before G2 review. Generated dist/, node_modules/, .agent-farm/,
+.agent-farm-backups/, and *.tsbuildinfo are excluded by .gitignore. The
+manifest intentionally includes historical evidence and the future-remote
+archive so the authority boundary is reviewable.
+
+Observed counts:
+- 142 non-ignored Git candidates (including this manifest and .gitignore).
+- 141 candidates are covered by the aggregate digest below; this manifest is
+  excluded to avoid a self-referential hash.
+- The planning inventory says 137 active files; a pre-edit Git candidate count
+  of 140 was reported during G0 review. The discrepancy is retained for
+  classification and is not treated as release evidence. The current 142-file
+  count includes the four retained G0/G1 evidence records created during the
+  stabilization pass.
+
+Aggregate SHA-256 (all non-ignored candidates except this manifest):
+  651fc8d7dd9703a1c7d734aa71350d9b3f164efa4ad04b30c42ff3f12baa348a
+
+Reproduce:
+  git status --porcelain=v1 --untracked-files=all
+  rg --files
+  git ls-files --cached --others --exclude-standard | grep -v '^evidence/g0/SOURCE_MANIFEST.txt$' | LC_ALL=C sort | xargs shasum -a 256 | shasum -a 256
+
+Relative paths:
+.gitignore
+README.md
+apps/server/package.json
+apps/server/src/auth.ts
+apps/server/src/browser-auth.ts
+apps/server/src/codex-reconciler.ts
+apps/server/src/codex-runtime.ts
+apps/server/src/composition.ts
+apps/server/src/contracts.ts
+apps/server/src/fakes.ts
+apps/server/src/index.ts
+apps/server/src/main.ts
+apps/server/src/pairing.ts
+apps/server/src/resource-loader.ts
+apps/server/src/runtime-service.ts
+apps/server/src/security.ts
+apps/server/src/source-root-authority.ts
+apps/server/src/token-status.ts
+apps/server/tests/auth.test.ts
+apps/server/tests/browser-auth-integration.test.ts
+apps/server/tests/browser-auth.test.ts
+apps/server/tests/codex-reconciler.test.ts
+apps/server/tests/codex-runtime.test.ts
+apps/server/tests/composition.test.ts
+apps/server/tests/main-config.test.ts
+apps/server/tests/mcp-resource-loader.test.ts
+apps/server/tests/mcp-resource-official.test.ts
+apps/server/tests/mcp-transport.test.ts
+apps/server/tests/production-entrypoint.e2e.test.ts
+apps/server/tests/runtime-service.test.ts
+apps/server/tests/server.test.ts
+apps/server/tests/source-root-authority.test.ts
+apps/server/tests/token-status.test.ts
+apps/server/tsconfig.json
+apps/web/index.html
+apps/web/package.json
+apps/web/scripts/inline-mcp-resource.mjs
+apps/web/src/App.test.tsx
+apps/web/src/App.tsx
+apps/web/src/adapters.ts
+apps/web/src/fixtures.ts
+apps/web/src/global.d.ts
+apps/web/src/index.ts
+apps/web/src/main.tsx
+apps/web/src/mcp-host.test.ts
+apps/web/src/mcp-host.ts
+apps/web/src/normalize.ts
+apps/web/src/pagination.test.ts
+apps/web/src/pagination.ts
+apps/web/src/reducer.test.ts
+apps/web/src/reducer.ts
+apps/web/src/standalone-bootstrap.test.ts
+apps/web/src/standalone-bootstrap.ts
+apps/web/src/styles.css
+apps/web/src/test-setup.ts
+apps/web/src/tree.ts
+apps/web/src/types.ts
+apps/web/tsconfig.json
+apps/web/vite.config.ts
+docs/AUTH_AND_TOOL_MATRIX.md
+docs/BRIDGE_SECURITY_CONTRACT.md
+docs/DEPLOYMENT_AND_ROLLBACK.md
+docs/EVIDENCE_LEDGER.md
+docs/LOCAL_V1_COMPLETION_PLAN.md
+docs/PHASE_A_CONTRACT.md
+docs/archive/future-remote/EXTERNAL_CHATGPT_ACCEPTANCE.md
+docs/archive/future-remote/README.md
+docs/archive/recoverable-artifacts/README.md
+evidence/g0/BASELINE_FAILURES.md
+evidence/g0/G1_GATE.md
+evidence/g0/SCAN_CLASSIFICATION.md
+evidence/g0/SOURCE_MANIFEST.txt
+evidence/phase-a/RUNTIME_PROBE.md
+evidence/phase-a/SCHEMA_HASHES.txt
+evidence/phase-a/app-server-probe.cjs
+evidence/phase-b-c/INTEGRATION_ACCEPTANCE.md
+evidence/phase-b/REAL_BRIDGE_SMOKE.md
+evidence/phase-e/EXTERNAL_CHATGPT_ACCEPTANCE_RUN_TEMPLATE.json
+evidence/phase-e/production-preflight.mts
+evidence/phase-e/validate-external-acceptance.mts
+evidence/phase-e/validate-external-acceptance.test.mts
+evidence/phase-f/REAL_RUNTIME_ACCEPTANCE.md
+evidence/phase-f/REAL_RUNTIME_ACCEPTANCE_RUN.json
+evidence/phase-f/check-private-source-ids.mjs
+evidence/phase-f/raw-lineage-diagnostic.cjs
+evidence/phase-f/real-runtime-acceptance.mts
+evidence/phase-g/REAL_RUNTIME_RECOVERY.md
+evidence/phase-g/REAL_RUNTIME_RECOVERY_RUN.json
+evidence/phase-g/real-runtime-recovery.mts
+evidence/phase-h/local-mode/ACCEPTANCE_CHECKLIST.md
+evidence/phase-h/local-mode/README.md
+package.json
+packages/codex-bridge/package.json
+packages/codex-bridge/src/allowlist.ts
+packages/codex-bridge/src/client.ts
+packages/codex-bridge/src/events.ts
+packages/codex-bridge/src/gate.ts
+packages/codex-bridge/src/index.ts
+packages/codex-bridge/src/minimizer.ts
+packages/codex-bridge/src/reconcile.ts
+packages/codex-bridge/src/rollout-evidence.ts
+packages/codex-bridge/src/transport.ts
+packages/codex-bridge/src/types.ts
+packages/codex-bridge/test/bridge.test.ts
+packages/codex-bridge/test/real-app-server.smoke.test.ts
+packages/codex-bridge/test/rollout-evidence.test.ts
+packages/codex-bridge/tsconfig.json
+packages/contracts/package.json
+packages/contracts/src/fixtures.ts
+packages/contracts/src/index.ts
+packages/contracts/src/projection.ts
+packages/contracts/src/schemas.ts
+packages/contracts/tests/contracts.test.ts
+packages/contracts/tsconfig.json
+packages/contracts/vitest.config.ts
+packages/mcp/package.json
+packages/mcp/src/app.ts
+packages/mcp/src/auth-context.ts
+packages/mcp/src/http.ts
+packages/mcp/src/index.ts
+packages/mcp/src/security.ts
+packages/mcp/src/types.ts
+packages/mcp/tests/app.test.ts
+packages/mcp/tests/http.test.ts
+packages/mcp/tsconfig.json
+packages/store/package.json
+packages/store/src/errors.ts
+packages/store/src/index.ts
+packages/store/src/schema.ts
+packages/store/src/store.ts
+packages/store/src/types.ts
+packages/store/src/util.ts
+packages/store/tests/store.test.ts
+packages/store/tsconfig.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+scripts/configure-local.mjs
+scripts/start-local.mjs
+tests/integration/agent-farm-local.e2e.test.ts
+tests/integration/agent-farm.e2e.test.ts
+tsconfig.base.json
+tsconfig.json

@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "observedAt": "2026-08-09T17:58:16Z",
+  "result": "PASS",
+  "command": "AGENT_FARM_SOURCE_ROOT_ID=$PAIRED_ROOT_ID AGENT_FARM_CODEX_SESSIONS_ROOT=$CODEX_SESSIONS_ROOT node --import tsx evidence/phase-f/real-runtime-acceptance.mts",
+  "acceptanceScriptSha256": "d0b35eebfd686c8385fdded8fd38a65ddfeea605334f64cb0cf6dc6a0d23312a",
+  "sourceTreeManifestSha256BeforeArtifact": "1b95a8bcd0dc0a38e9b02b588c415b79ccd9301197b9eaedcfdce09e52a59ad8",
+  "sourceTreeManifestCommand": "rg --files -g '!evidence/phase-f/REAL_RUNTIME_ACCEPTANCE_RUN.json' | LC_ALL=C sort | xargs shasum -a 256 | shasum -a 256",
+  "checkout": {
+    "branch": "codex/agent-farm",
+    "revision": null,
+    "state": "unborn branch; no commit exists"
+  },
+  "runtime": {
+    "codexVersion": "0.145.0",
+    "binarySha256": "1da3f4e0e96028b8a771814293c3033dafd1971f943f6c7e79b0897fe705f590",
+    "state": "connected",
+    "reconciliationState": "reconciled",
+    "sourceListPages": 33,
+    "sourceThreadCount": 83
+  },
+  "projection": {
+    "durableAgents": 83,
+    "durableEdges": 82,
+    "mcpAgents": 83,
+    "mcpEdges": 82,
+    "mcpProvisioned": true,
+    "privateSourceIdentifierScan": "PASS",
+    "restPrivateFieldScan": "PASS",
+    "mcpPrivateFieldScan": "PASS"
+  },
+  "main": {
+    "observedModel": "gpt-5.6-sol",
+    "observedEffort": "xhigh",
+    "observedProvider": "openai",
+    "verificationState": "unverified-no-request"
+  },
+  "requiredBranch": [
+    {
+      "name": "Dirac",
+      "parent": "Main",
+      "requested": "Sol High",
+      "observed": "Sol High",
+      "provider": "OpenAI",
+      "verification": "verified"
+    },
+    {
+      "name": "Rhea",
+      "parent": "Dirac",
+      "requested": "Luna Max",
+      "observed": "Luna Max",
+      "provider": "OpenAI",
+      "verification": "verified"
+    },
+    {
+      "name": "Kuhn",
+      "parent": "Dirac",
+      "requested": "Sol Medium",
+      "observed": "Sol Medium",
+      "provider": "OpenAI",
+      "verification": "verified"
+    },
+    {
+      "name": "Noether",
+      "parent": "Rhea",
+      "requested": "Sol Low",
+      "observed": "Sol Low",
+      "provider": "OpenAI",
+      "verification": "verified"
+    }
+  ],
+  "omitted": [
+    "source thread identifiers",
+    "rollout paths",
+    "prompts and messages",
+    "function-call arguments",
+    "credentials and OAuth values"
+  ]
+}
