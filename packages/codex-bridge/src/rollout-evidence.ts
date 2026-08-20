@@ -1,6 +1,7 @@
 import { constants } from 'node:fs';
 import { lstat, open, readdir, realpath } from 'node:fs/promises';
-import { basename, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { sanitizeChatTitle } from './minimizer.js';
 
 /** The only model/effort pair retained from an ordered turn context. */
 export interface RolloutObservedHistory {
@@ -63,6 +64,14 @@ export interface RolloutIdentityEvidence {
 export interface RolloutIdentityReaderOptions {
   /** Absolute directory under which rollout files may be read. */
   readonly sessionsRoot: string;
+  /**
+   * Optional Codex Desktop title index. For the local runtime this must be the
+   * `session_index.jsonl` sibling of `sessionsRoot`; it is read-only metadata
+   * used only to fill a missing app-server title.
+   */
+  readonly sessionIndexPath?: string;
+  readonly maxSessionIndexBytes?: number;
+  readonly maxSessionIndexLines?: number;
   readonly maxFileBytes?: number;
   readonly maxLineBytes?: number;
   readonly maxLines?: number;
@@ -86,6 +95,8 @@ export interface RolloutIdentityReaderOptions {
 export interface TrustedLocalRolloutResolver {
   readIdentity(threadId: string): Promise<RolloutIdentityEvidence | undefined>;
   readDetail(threadId: string): Promise<LocalRolloutDetail | undefined>;
+  /** Sanitized Codex Desktop title, when the local title index has one. */
+  readChatTitle(threadId: string): Promise<string | undefined>;
   /** Additive structural fallback for descendants omitted by app-server list/read. */
   discoverTopology(rootThreadId: string): Promise<readonly TrustedLocalTopologyNode[] | undefined>;
 }
@@ -198,8 +209,8 @@ function parseChangedFiles(value: unknown): LocalRolloutDetail['changedFiles'] {
   return result;
 }
 
-// Long-running recursive chats can grow a single rollout well past the former
-// 64/128 MiB budgets. Identity is read line-by-line (never whole-file
+// Long-running recursive chats can grow a single rollout beyond legacy
+// budgets. Identity is read line-by-line (never whole-file
 // materialized) so a valid long chat does not lose model/effort or lifecycle
 // evidence, while the per-line and per-file byte caps still prevent an
 // operator from turning this local reader into an unbounded file-to-memory
@@ -222,6 +233,8 @@ const DEFAULT_MAX_TOPOLOGY_NODES = 200;
 const DEFAULT_MAX_TOPOLOGY_FILES = 5_000;
 const DEFAULT_MAX_TOPOLOGY_BYTES = 128 * 1024 * 1024;
 const DEFAULT_MAX_TOPOLOGY_RECORDS = 100_000;
+const DEFAULT_MAX_SESSION_INDEX_BYTES = 8 * 1024 * 1024;
+const DEFAULT_MAX_SESSION_INDEX_LINES = 50_000;
 const TOPOLOGY_HEADER_BYTES = 64 * 1024;
 const TOPOLOGY_DETAIL_FILE_BYTES = 8 * 1024 * 1024;
 const ABSOLUTE_MAX_FILE_BYTES = 512 * 1024 * 1024;
@@ -236,6 +249,9 @@ const ABSOLUTE_MAX_TOPOLOGY_NODES = 1_000;
 const ABSOLUTE_MAX_TOPOLOGY_FILES = 20_000;
 const ABSOLUTE_MAX_TOPOLOGY_BYTES = 512 * 1024 * 1024;
 const ABSOLUTE_MAX_TOPOLOGY_RECORDS = 500_000;
+const ABSOLUTE_MAX_SESSION_INDEX_BYTES = 64 * 1024 * 1024;
+const ABSOLUTE_MAX_SESSION_INDEX_LINES = 200_000;
+const MAX_SESSION_INDEX_LINE_BYTES = 64 * 1024;
 const SAFE_ID = /^[A-Za-z0-9._:-]{1,256}$/u;
 const SAFE_WORD = /^[A-Za-z0-9._:@+/-]{1,128}$/u;
 const SAFE_TASK_LABEL = /^[a-z0-9][a-z0-9_]{0,127}$/u;
@@ -259,6 +275,8 @@ interface ReaderLimits {
   readonly maxTopologyFiles: number;
   readonly maxTopologyBytes: number;
   readonly maxTopologyRecords: number;
+  readonly maxSessionIndexBytes: number;
+  readonly maxSessionIndexLines: number;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -292,10 +310,12 @@ function limits(options: RolloutIdentityReaderOptions): ReaderLimits | undefined
   const maxTopologyFiles = boundedInteger(options.maxTopologyFiles, DEFAULT_MAX_TOPOLOGY_FILES, ABSOLUTE_MAX_TOPOLOGY_FILES);
   const maxTopologyBytes = boundedInteger(options.maxTopologyBytes, DEFAULT_MAX_TOPOLOGY_BYTES, ABSOLUTE_MAX_TOPOLOGY_BYTES);
   const maxTopologyRecords = boundedInteger(options.maxTopologyRecords, DEFAULT_MAX_TOPOLOGY_RECORDS, ABSOLUTE_MAX_TOPOLOGY_RECORDS);
-  if (maxFileBytes === undefined || maxLineBytes === undefined || maxLines === undefined || maxRecords === undefined || maxObservedHistory === undefined || maxRequestedSpawns === undefined || maxArgumentBytes === undefined || maxUsageSegments === undefined || maxDirectoryEntries === undefined || maxDirectoryDepth === undefined || maxTopologyNodes === undefined || maxTopologyFiles === undefined || maxTopologyBytes === undefined || maxTopologyRecords === undefined) {
+  const maxSessionIndexBytes = boundedInteger(options.maxSessionIndexBytes, DEFAULT_MAX_SESSION_INDEX_BYTES, ABSOLUTE_MAX_SESSION_INDEX_BYTES);
+  const maxSessionIndexLines = boundedInteger(options.maxSessionIndexLines, DEFAULT_MAX_SESSION_INDEX_LINES, ABSOLUTE_MAX_SESSION_INDEX_LINES);
+  if (maxFileBytes === undefined || maxLineBytes === undefined || maxLines === undefined || maxRecords === undefined || maxObservedHistory === undefined || maxRequestedSpawns === undefined || maxArgumentBytes === undefined || maxUsageSegments === undefined || maxDirectoryEntries === undefined || maxDirectoryDepth === undefined || maxTopologyNodes === undefined || maxTopologyFiles === undefined || maxTopologyBytes === undefined || maxTopologyRecords === undefined || maxSessionIndexBytes === undefined || maxSessionIndexLines === undefined) {
     return undefined;
   }
-  return { maxFileBytes, maxLineBytes, maxLines, maxRecords, maxObservedHistory, maxRequestedSpawns, maxArgumentBytes, maxUsageSegments, maxDirectoryEntries, maxDirectoryDepth, maxTopologyNodes, maxTopologyFiles, maxTopologyBytes, maxTopologyRecords };
+  return { maxFileBytes, maxLineBytes, maxLines, maxRecords, maxObservedHistory, maxRequestedSpawns, maxArgumentBytes, maxUsageSegments, maxDirectoryEntries, maxDirectoryDepth, maxTopologyNodes, maxTopologyFiles, maxTopologyBytes, maxTopologyRecords, maxSessionIndexBytes, maxSessionIndexLines };
 }
 
 function safeTopologyStatus(value: unknown): TrustedLocalTopologyNode['status'] {
@@ -460,6 +480,83 @@ async function readBoundedUtf8(filename: string, maxBytes: number): Promise<stri
   } finally {
     await handle.close();
   }
+}
+
+interface SessionIndexEntry {
+  readonly order: number;
+  readonly title?: string;
+  readonly updatedAt?: string;
+}
+
+function sessionIndexTime(value: string | undefined): number {
+  if (value === undefined) return Number.NEGATIVE_INFINITY;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
+}
+
+function isNewerSessionIndexEntry(current: SessionIndexEntry, next: SessionIndexEntry): boolean {
+  const currentTime = sessionIndexTime(current.updatedAt);
+  const nextTime = sessionIndexTime(next.updatedAt);
+  return nextTime > currentTime || (nextTime === currentTime && next.order > current.order);
+}
+
+async function resolveTrustedSessionIndexPath(
+  options: RolloutIdentityReaderOptions,
+): Promise<string | undefined> {
+  const pathValue = safePathValue(options.sessionIndexPath);
+  if (pathValue === undefined) return undefined;
+  try {
+    const configuredRoot = resolve(options.sessionsRoot);
+    const expectedPath = join(dirname(configuredRoot), 'session_index.jsonl');
+    const candidate = resolve(pathValue);
+    if (candidate !== expectedPath) return undefined;
+    const rootStat = await lstat(configuredRoot);
+    if (!rootStat.isDirectory() || rootStat.isSymbolicLink()) return undefined;
+    const parentStat = await lstat(dirname(configuredRoot));
+    if (!parentStat.isDirectory() || parentStat.isSymbolicLink()) return undefined;
+    const indexStat = await lstat(candidate);
+    if (!indexStat.isFile() || indexStat.isSymbolicLink()) return undefined;
+    const parent = await realpath(dirname(configuredRoot));
+    const resolved = await realpath(candidate);
+    return inside(parent, resolved) && basename(resolved) === 'session_index.jsonl' ? resolved : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function parseSessionIndex(text: string, readerLimits: ReaderLimits): ReadonlyMap<string, string> | undefined {
+  const lines = text.split('\n');
+  if (lines.length > readerLimits.maxSessionIndexLines + 1) return undefined;
+  const entries = new Map<string, SessionIndexEntry>();
+  let order = 0;
+  for (const rawLine of lines) {
+    let line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
+    if (line.length === 0) continue;
+    if (Buffer.byteLength(line, 'utf8') > Math.min(readerLimits.maxLineBytes, MAX_SESSION_INDEX_LINE_BYTES)) return undefined;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(line);
+    } catch {
+      return undefined;
+    }
+    if (!isRecord(parsed)) return undefined;
+    const id = safeId(parsed.id);
+    if (id === undefined) continue;
+    const title = sanitizeChatTitle(parsed.thread_name);
+    const updatedAt = safeTimestamp(parsed.updated_at ?? parsed.updatedAt);
+    const next: SessionIndexEntry = {
+      order: order++,
+      ...(title === undefined ? {} : { title }),
+      ...(updatedAt === undefined ? {} : { updatedAt }),
+    };
+    const current = entries.get(id);
+    if (current === undefined || isNewerSessionIndexEntry(current, next)) entries.set(id, next);
+  }
+  const titles = new Map<string, string>();
+  for (const [id, entry] of entries) {
+    if (entry.title !== undefined) titles.set(id, entry.title);
+  }
+  return titles;
 }
 
 /**
@@ -1127,6 +1224,9 @@ function localThreadRead(lines: readonly string[], filename: string, threadId: s
  * duplicate file/session remains unavailable.
  */
 export function createTrustedLocalRolloutResolver(options: RolloutIdentityReaderOptions): TrustedLocalRolloutResolver {
+  let sessionIndexCache:
+    | { readonly filename: string; readonly size: number; readonly mtimeMs: number; readonly titles?: ReadonlyMap<string, string> }
+    | undefined;
   const resolveRead = async (threadId: string): Promise<unknown> => {
     if (safeId(threadId) !== threadId) return undefined;
     const readerLimits = limits(options);
@@ -1148,6 +1248,26 @@ export function createTrustedLocalRolloutResolver(options: RolloutIdentityReader
     readDetail: async (threadId: string) => {
       const raw = await resolveRead(threadId);
       return raw === undefined ? undefined : readRolloutLocalDetail(raw, threadId, options);
+    },
+    readChatTitle: async (threadId: string): Promise<string | undefined> => {
+      if (safeId(threadId) !== threadId) return undefined;
+      const readerLimits = limits(options);
+      if (readerLimits === undefined) return undefined;
+      try {
+        const filename = await resolveTrustedSessionIndexPath(options);
+        if (filename === undefined) return undefined;
+        const stat = await lstat(filename);
+        if (!stat.isFile() || stat.isSymbolicLink() || !Number.isSafeInteger(stat.size) || stat.size < 0) return undefined;
+        if (sessionIndexCache?.filename === filename && sessionIndexCache.size === stat.size && sessionIndexCache.mtimeMs === stat.mtimeMs) {
+          return sessionIndexCache.titles?.get(threadId);
+        }
+        const text = await readBoundedUtf8(filename, readerLimits.maxSessionIndexBytes);
+        const titles = text === undefined ? undefined : parseSessionIndex(text, readerLimits);
+        sessionIndexCache = { filename, size: stat.size, mtimeMs: stat.mtimeMs, ...(titles === undefined ? {} : { titles }) };
+        return titles?.get(threadId);
+      } catch {
+        return undefined;
+      }
     },
     discoverTopology: async (rootThreadId: string) => {
       if (safeId(rootThreadId) !== rootThreadId) return undefined;

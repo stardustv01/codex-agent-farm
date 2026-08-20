@@ -73,7 +73,7 @@ export type BridgeSourceKind = 'cli' | 'ide' | 'cloud' | 'subagent' | 'unknown';
 
 export interface SanitizedThread {
   readonly sourceThreadId: string;
-  /** Bounded local display title; never a prompt, path, or raw identifier. */
+  /** Bounded local display title from Codex title/preview metadata; never a full prompt, path, or raw identifier. */
   readonly chatTitle?: string;
   /** Final basename of a local working directory; the directory is discarded. */
   readonly workspaceName?: string;

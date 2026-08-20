@@ -162,9 +162,11 @@ projections:
   redacted payload, correlation, authority, and redaction version.
 - `bridge_bindings`, idempotency, and audit records.
 - Optional rollout identity is read only from the absolute configured sessions
-  root. The reader retains only provider/model/effort and structural spawn task
-  labels after exact thread/turn correlation; it never persists source IDs,
-  prompts, messages, paths, function-call arguments, credentials, or secrets.
+  root. The reader may additionally inspect only that root's
+  `session_index.jsonl` sibling for a bounded, sanitized title fallback. It
+  retains only provider/model/effort, structural spawn task labels, and the
+  matched title after exact correlation; it never persists source IDs, prompts,
+  messages, paths, function-call arguments, credentials, or secrets.
 - `mcp_grant_session_bindings`: schema v2 mapping represented only by a keyed
   digest of owner/tenant/subject/resource/refresh-stable OAuth `sid` to a
   server-generated Agent Farm session. Raw bearer, `sid`, and `jti` values are
@@ -212,13 +214,17 @@ later remount cannot resurrect deleted data.
 `AGENT_FARM_CODEX_SESSIONS_ROOT` is an absolute production trust-root setting,
 but rollout identity is optional evidence rather than topology authority. Each
 candidate path is constrained below the realpath-checked, non-symlink root and
-bounded by a 64 MiB default file limit and a 128 MiB absolute cap, with file,
+bounded by a 256 MiB default file limit and a 512 MiB absolute cap, with file,
 line, record, observed-history, spawn-count, path, symlink-component, and
 argument-byte limits. The reader accepts only a metadata segment whose
 `session_meta.payload.id` matches the selected raw thread ID, plus turn IDs at
 or after that thread's creation time. Missing, inherited,
 malformed, ambiguous, or unavailable evidence leaves identity unverified; it
 does not invalidate an otherwise valid selected tree.
+The local title supplement is constrained to the sibling
+`session_index.jsonl`, bounded to an 8 MiB default read, and used only when
+app-server thread metadata does not contain a title. Unsafe, malformed,
+oversized, missing, or symlinked index data leaves the title unavailable.
 
 ### Standalone OAuth BFF
 

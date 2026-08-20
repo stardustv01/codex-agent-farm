@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, rm, symlink, truncate, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, symlink, truncate, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -192,6 +192,60 @@ test('trusted local resolver enriches exact identity/detail without app-server a
     assert.equal(await resolver.readDetail(THREAD_ID), undefined);
   } finally {
     await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('trusted local resolver fills missing titles from the latest Codex session-index record', async () => {
+  const home = await mkdtemp(join(tmpdir(), 'agent-farm-session-index-'));
+  const sessionsRoot = join(home, 'sessions');
+  const sessionIndexPath = join(home, 'session_index.jsonl');
+  await mkdir(sessionsRoot);
+  try {
+    await writeFile(sessionIndexPath, jsonl([
+      { id: THREAD_ID, thread_name: 'Older title', updated_at: '2026-08-18T10:00:00.000Z' },
+      { id: THREAD_ID, thread_name: 'Current Codex title', updated_at: '2026-08-19T10:00:00.000Z' },
+      { id: 'thread-unsafe-title', thread_name: 'api_key=do-not-show', updated_at: '2026-08-19T11:00:00.000Z' },
+    ]), 'utf8');
+    const resolver = createTrustedLocalRolloutResolver({ sessionsRoot, sessionIndexPath });
+    assert.equal(await resolver.readChatTitle(THREAD_ID), 'Current Codex title');
+    assert.equal(await resolver.readChatTitle('thread-unsafe-title'), undefined);
+    assert.equal(await resolver.readChatTitle('thread-missing'), undefined);
+
+    await writeFile(sessionIndexPath, jsonl([
+      { id: THREAD_ID, thread_name: 'Current Codex title', updated_at: '2026-08-19T10:00:00.000Z' },
+      { id: THREAD_ID, thread_name: 'Renamed in Codex', updated_at: '2026-08-19T12:00:00.000Z' },
+    ]), 'utf8');
+    assert.equal(await resolver.readChatTitle(THREAD_ID), 'Renamed in Codex');
+  } finally {
+    await rm(home, { recursive: true, force: true });
+  }
+});
+
+test('session-index title lookup fails closed for malformed, oversized, traversed, and symlinked indexes', async () => {
+  const home = await mkdtemp(join(tmpdir(), 'agent-farm-session-index-guards-'));
+  const sessionsRoot = join(home, 'sessions');
+  const sessionIndexPath = join(home, 'session_index.jsonl');
+  const outside = join(home, 'outside.jsonl');
+  await mkdir(sessionsRoot);
+  try {
+    await writeFile(sessionIndexPath, '{not-json}\n', 'utf8');
+    const malformed = createTrustedLocalRolloutResolver({ sessionsRoot, sessionIndexPath });
+    assert.equal(await malformed.readChatTitle(THREAD_ID), undefined);
+
+    await writeFile(sessionIndexPath, 'x'.repeat(256), 'utf8');
+    const oversized = createTrustedLocalRolloutResolver({ sessionsRoot, sessionIndexPath, maxSessionIndexBytes: 32 });
+    assert.equal(await oversized.readChatTitle(THREAD_ID), undefined);
+
+    await writeFile(outside, jsonl([{ id: THREAD_ID, thread_name: 'Outside title' }]), 'utf8');
+    const traversed = createTrustedLocalRolloutResolver({ sessionsRoot, sessionIndexPath: outside });
+    assert.equal(await traversed.readChatTitle(THREAD_ID), undefined);
+
+    await rm(sessionIndexPath);
+    await symlink(outside, sessionIndexPath);
+    const symlinked = createTrustedLocalRolloutResolver({ sessionsRoot, sessionIndexPath });
+    assert.equal(await symlinked.readChatTitle(THREAD_ID), undefined);
+  } finally {
+    await rm(home, { recursive: true, force: true });
   }
 });
 

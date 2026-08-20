@@ -86,6 +86,8 @@ export interface CodexRuntimeReadOnlyClient {
   readonly listThreads: (params?: JsonObject) => Promise<SanitizedThreadPage>;
   readonly readThread: (params: JsonObject) => Promise<SanitizedThreadRead>;
   readonly listModels: (params?: JsonObject) => Promise<SanitizedModelCatalog>;
+  /** Optional sanitized title lookup from Codex Desktop's local index. */
+  readonly readChatTitle?: (threadId: string) => Promise<string | undefined>;
   /** Optional bounded identity evidence from the pinned local rollout store. */
   readonly readRolloutIdentity?: (threadId: string) => Promise<RolloutIdentityEvidence | undefined>;
   readonly readRolloutLocalDetail?: (threadId: string) => Promise<LocalRolloutDetail | undefined>;

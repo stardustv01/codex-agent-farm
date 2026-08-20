@@ -35,7 +35,9 @@ An installing human or agent may approve only the following operations:
 2. Download that exact package and its locked dependencies.
 3. Execute Node.js and the verified compatible Codex CLI as the current user.
 4. Read bounded, non-symlink Codex session files below the resolved
-   `~/.codex/sessions` trust root for identity correlation.
+   `~/.codex/sessions` trust root for identity correlation, plus the bounded
+   sibling `~/.codex/session_index.jsonl` title index for sanitized chat-title
+   fallback.
 5. Create the declared Agent Farm data directory with mode `0700`.
 6. Create configuration, key, and SQLite files with mode `0600`.
 7. Bind only an explicitly reported loopback address and port.

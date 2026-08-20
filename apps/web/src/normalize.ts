@@ -350,7 +350,9 @@ export function normalizeCandidateRoots(value: unknown): LocalCandidateRoot[] {
     const selectionHandle = isSafeSelectionHandle(candidate.selectionHandle) ? candidate.selectionHandle : undefined;
     const candidateDisplayName = asString(candidate.displayName);
     if (!selectionHandle || !candidateDisplayName || seen.has(selectionHandle)) return [];
-    const displayName = isSafeLocalDisplayName(candidateDisplayName) ? candidateDisplayName : `Untitled chat · ${String(roots.length + 1).padStart(2, '0')}`;
+    const displayName = isSafeLocalDisplayName(candidateDisplayName) && !isGenericChatTitle(candidateDisplayName)
+      ? candidateDisplayName
+      : `Chat · ${String(roots.length + 1).padStart(2, '0')}`;
     const root: LocalCandidateRoot = { selectionHandle, displayName };
     if (candidate.chatHandle !== undefined) {
       if (!isSafeChatHandle(candidate.chatHandle)) return [];
@@ -360,7 +362,7 @@ export function normalizeCandidateRoots(value: unknown): LocalCandidateRoot[] {
     const workspaceName = asString(candidate.workspaceName);
     if (candidate.chatTitle !== undefined && (!chatTitle || !isSafeLocalDisplayName(chatTitle))) return [];
     if (candidate.workspaceName !== undefined && (!workspaceName || !isSafeLocalDisplayName(workspaceName))) return [];
-    if (chatTitle) root.chatTitle = chatTitle;
+    if (chatTitle && !isGenericChatTitle(chatTitle)) root.chatTitle = chatTitle;
     if (workspaceName) root.workspaceName = workspaceName;
     if (candidate.active !== undefined && candidate.active !== true) return [];
     if (candidate.active === true) {
@@ -399,8 +401,14 @@ function safeLocalTimestamp(value: unknown): string | undefined {
 }
 
 export function isSafeLocalDisplayName(value: string): boolean {
-  const sensitiveLabel = /(?:^|[\s._-])(?:(?:access|refresh|id|auth|bearer|session|cookie|credential|secret|csrf|code|nonce|password|jwt|token)(?:[._-]?(?:token|id|key|secret|code))?|api[\s._-]?(?:token|id|key|secret|code))(?:$|[\s._=-])/iu;
+  // Ordinary words such as "code" or "id" are valid chat titles. Reject
+  // only labels that have the shape of a credential or bearer value.
+  const sensitiveLabel = /(?:bearer\s+\S+|(?:access|refresh|auth|api)[\s._-]?(?:token|key|secret)\b|(?:password|passwd|cookie|authorization|credential|private[_-]?key|secret)\s*[:=]\s*\S+)/iu;
   return !value.includes('/') && !value.includes('\\') && !/^(?:[A-Za-z]:|\.{0,2}\/|[A-Za-z][A-Za-z0-9+.-]*:\/\/)/u.test(value) && !sensitiveLabel.test(value);
+}
+
+function isGenericChatTitle(value: string): boolean {
+  return /^untitled\s+chat(?:\s*(?:·|•|\||:|-)\s*\d+)?$/iu.test(value.trim());
 }
 
 function safeLocalLifecycle(value: unknown): string | undefined {

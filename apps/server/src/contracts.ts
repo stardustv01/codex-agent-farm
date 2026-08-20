@@ -207,6 +207,8 @@ export interface SourceRootCandidate {
   readonly chatTitle?: string;
   readonly workspaceName?: string;
   readonly nickname?: string;
+  /** Safe final segment of the structural agent task path, used only for display fallback. */
+  readonly agentTaskName?: string;
   readonly agentPath?: string;
   readonly status: string;
   readonly updatedAt?: string;

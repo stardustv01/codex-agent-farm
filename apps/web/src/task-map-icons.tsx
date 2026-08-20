@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 
-type IconName = 'agent-farm' | 'branch' | 'chevron' | 'close' | 'filter' | 'moon' | 'search' | 'terminal';
+type IconName = 'agent-farm' | 'branch' | 'chevron' | 'close' | 'filter' | 'folder' | 'folder-open' | 'moon' | 'search' | 'terminal';
 export type AgentIdentityTone = 'sol' | 'luna' | 'terra' | 'review' | 'unknown';
 export type AgentLifecycleTone = 'active' | 'waiting' | 'complete' | 'blocked' | 'unknown';
 
@@ -21,6 +21,8 @@ export function TaskMapIcon({ name, size = 18 }: { readonly name: IconName; read
   if (name === 'chevron') return <svg {...common}><path d="m9 5 7 7-7 7" /></svg>;
   if (name === 'close') return <svg {...common}><path d="m6 6 12 12M18 6 6 18" /></svg>;
   if (name === 'filter') return <svg {...common}><path d="M4 7h10m4 0h2M4 17h2m4 0h10M14 4v6M6 14v6" /></svg>;
+  if (name === 'folder') return <svg {...common}><path d="M3.5 6.5h6l1.8 2h9.2v9.2a1.8 1.8 0 0 1-1.8 1.8H5.3a1.8 1.8 0 0 1-1.8-1.8Z" /><path d="M3.5 6.5v-1a1.8 1.8 0 0 1 1.8-1.8h4.1l1.8 2h5.3" /></svg>;
+  if (name === 'folder-open') return <svg {...common}><path d="M3.5 7.5h6l1.8 2h9.2l-1.5 7.4a1.8 1.8 0 0 1-1.8 1.4H5.1a1.8 1.8 0 0 1-1.8-1.8Z" /><path d="M3.5 7.5v-2a1.8 1.8 0 0 1 1.8-1.8h4.1l1.8 2h5.3" /></svg>;
   if (name === 'moon') return <svg {...common}><path d="M19 15.3A8 8 0 0 1 8.7 5a7.3 7.3 0 1 0 10.3 10.3Z" /></svg>;
   if (name === 'search') return <svg {...common}><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>;
   if (name === 'terminal') return <svg {...common}><path d="m5 7 4 5-4 5m7 0h7" /></svg>;

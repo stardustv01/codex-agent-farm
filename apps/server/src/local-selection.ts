@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 
+import { compactChatTitle, sanitizeChatTitle } from "@agent-farm/codex-bridge";
 import type { Principal, SourceRootCandidate } from "./contracts.js";
 import { canonicalJson, sha256 } from "./security.js";
 
@@ -147,6 +148,7 @@ export class LocalSelectionRegistry {
       chatTitle: candidate.chatTitle ?? null,
       workspaceName: candidate.workspaceName ?? null,
       nickname: candidate.nickname ?? null,
+      agentTaskName: candidate.agentTaskName ?? null,
       status: candidate.status,
       updatedAt: candidate.updatedAt ?? null,
       descendantCount: candidate.descendantCount ?? null,
@@ -171,10 +173,11 @@ export class LocalSelectionRegistry {
       }));
       const lastActivityAt = safeLastActivity(candidate.updatedAt);
       const descendantCount = safeDescendantCount(candidate.descendantCount);
-      const chatTitle = safePublicLabel(candidate.chatTitle, privateRootIds);
+      const chatTitle = safeChatTitle(candidate.chatTitle, privateRootIds);
       const workspaceName = safePublicLabel(candidate.workspaceName, privateRootIds);
+      const displayName = safeDisplayName([candidate.chatTitle, candidate.nickname, candidate.agentTaskName], privateRootIds, index);
       const activeTask: LocalActiveTask = {
-        displayName: safeDisplayName(candidate.chatTitle ?? candidate.nickname, privateRootIds, index),
+        displayName,
         ...(chatTitle === undefined ? {} : { chatTitle }),
         ...(workspaceName === undefined ? {} : { workspaceName }),
         lifecycle,
@@ -342,8 +345,37 @@ function safeLifecycle(value: unknown): string | undefined {
   return allowed.has(normalized) ? normalized : "unknown";
 }
 
-function safeDisplayName(value: unknown, sourceRootIds: readonly string[], index: number): string {
-  return safePublicLabel(value, sourceRootIds) ?? `Untitled chat · ${String(index + 1).padStart(2, "0")}`;
+function safeDisplayName(values: readonly unknown[], sourceRootIds: readonly string[], index: number): string {
+  for (const value of values) {
+    const label = safeChatTitle(value, sourceRootIds) ?? safePublicLabel(value, sourceRootIds);
+    if (label !== undefined && !isGenericChatTitle(label)) return label;
+  }
+  return `Chat · ${String(index + 1).padStart(2, "0")}`;
+}
+
+function safeChatTitle(value: unknown, sourceRootIds: readonly string[]): string | undefined {
+  if (typeof value !== "string") return undefined;
+  // Titles may legitimately mention a URL or a thread id. Remove those
+  // private/transport-shaped fragments first, then apply title-specific
+  // privacy checks so ordinary words such as "code" remain valid labels.
+  let cleaned = value;
+  for (const sourceRootId of sourceRootIds) cleaned = cleaned.replaceAll(sourceRootId, " ");
+  cleaned = cleaned
+    .replace(/https?:\/\/\S+/giu, " ")
+    .replace(/(?:^|\s)(?:~\/|\/|[A-Za-z]:[\\/])\S+/gu, " ")
+    .replace(/\b(?:[A-Za-z0-9._-]+\/)+[A-Za-z0-9._-]+\b/gu, " ")
+    .replace(/\s+/gu, " ")
+    .trim();
+  const label = sanitizeChatTitle(cleaned) ?? compactChatTitle(cleaned);
+  if (label === undefined || /[\\/]/u.test(label)) return undefined;
+  const decoded = safelyDecodeURIComponent(label);
+  if (/[\\/]/u.test(decoded) || sourceRootIds.some((sourceRootId) => label.toLowerCase().includes(sourceRootId.toLowerCase()))) return undefined;
+  if (/(?:bearer\s+\S+|(?:access|refresh|auth|api)[\s._-]?(?:token|key|secret)\b|(?:password|passwd|cookie|authorization|credential|private[_-]?key|secret)\s*[:=]\s*\S+)/iu.test(label)) return undefined;
+  return isGenericChatTitle(label) ? undefined : label;
+}
+
+function isGenericChatTitle(value: string): boolean {
+  return /^untitled\s+chat(?:\s*(?:·|•|\||:|-)\s*\d+)?$/iu.test(value.trim());
 }
 
 function safePublicLabel(value: unknown, sourceRootIds: readonly string[]): string | undefined {

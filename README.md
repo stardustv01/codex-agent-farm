@@ -122,9 +122,11 @@ private files use mode `0600`.
 Agent Farm runs as your current user. It does not require `sudo`, administrator
 access, Full Disk Access, Screen Recording, Accessibility, camera, microphone,
 location, a firewall change, or a public domain. It reads bounded records from
-`~/.codex/sessions` to resolve agent identity, hierarchy, lifecycle, and usage.
-The dashboard does not expose prompts, messages, tool arguments, credentials,
-or private filesystem paths.
+`~/.codex/sessions` to resolve agent identity, hierarchy, lifecycle, and usage,
+and may read the sibling `~/.codex/session_index.jsonl` only to recover a
+sanitized Codex chat title when the app-server metadata has none. The dashboard
+does not expose prompts, messages, tool arguments, credentials, or private
+filesystem paths.
 
 ## Troubleshooting
 

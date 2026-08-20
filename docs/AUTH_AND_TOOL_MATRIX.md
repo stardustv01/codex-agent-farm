@@ -130,7 +130,7 @@ one-shot unpaginated method; the bridge enforces an 8 MiB line cap while
 
 Production requires the absolute `AGENT_FARM_CODEX_SESSIONS_ROOT` trust root.
 Rollout identity remains optional evidence: the bounded reader checks realpath,
-rejects symlink components, applies a 64 MiB default file bound and 128 MiB
+rejects symlink components, applies a 256 MiB default file bound and 512 MiB
 absolute cap plus file/line/record/history/spawn/path/argument limits, and
 correlates only the selected thread's matching session segment and
 post-creation turn IDs. It retains only provider/model/effort and structural
@@ -138,6 +138,10 @@ spawn task labels. Missing, inherited, malformed, ambiguous, or unavailable
 records leave identity unverified and never alter topology. Source IDs, prompts,
 messages, paths, function-call arguments, credentials, and secrets are not
 returned by the reader or public REST/MCP surfaces.
+For local title enrichment, the reader may also inspect only the
+`session_index.jsonl` sibling of that configured sessions directory, with an
+8 MiB default bounded index read; it retains only a sanitized title matched by
+the exact thread ID and uses it only when app-server metadata has no title.
 
 ## Standalone browser BFF
 

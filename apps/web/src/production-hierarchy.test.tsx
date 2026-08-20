@@ -179,6 +179,41 @@ describe('production public hierarchy', () => {
     }
   });
 
+  it('collapses project chat folders and reopens a matching folder during search', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      agentSessionId: 'folder-projection',
+      paired: true,
+      activeTask: { displayName: 'Current task', workspaceName: 'Agent-farm V1', lifecycle: 'running' },
+    }), { status: 200, headers: { 'content-type': 'application/json', 'x-csrf-token': 'csrf_folder_1234567890' } })));
+    try {
+      render(<AgentFarmApp mode="standalone" snapshot={canonicalHierarchyFixture} runtimeConfig={{
+        localMode: true,
+        paired: true,
+        agentSessionId: 'folder-projection',
+        csrfToken: 'csrf_folder_status_1234567890',
+        activeTask: { displayName: 'Current task', workspaceName: 'Agent-farm V1', lifecycle: 'running' },
+        candidateRoots: [
+          { selectionHandle: 'a'.repeat(43), displayName: 'Current task', workspaceName: 'Agent-farm V1', active: true },
+          { selectionHandle: 'b'.repeat(43), displayName: 'Verify Agent Farm browser hierarchy', workspaceName: 'Agent-farm V1' },
+          { selectionHandle: 'c'.repeat(43), displayName: 'Other project chat', workspaceName: 'Other project' },
+        ],
+      }} />);
+      await user.click(screen.getByRole('button', { name: /Current task Agent-farm V1 · Current chat/i }));
+      const projectFolder = screen.getByRole('button', { name: /Agent-farm V1, 2 chats, collapse project folder/i });
+      expect(projectFolder).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByRole('button', { name: /Verify Agent Farm browser hierarchy/i })).toBeInTheDocument();
+      await user.click(projectFolder);
+      expect(projectFolder).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByRole('button', { name: /Verify Agent Farm browser hierarchy/i })).not.toBeInTheDocument();
+      await user.type(screen.getByRole('searchbox', { name: 'Search chats' }), 'Verify Agent Farm');
+      expect(screen.getByRole('button', { name: /Verify Agent Farm browser hierarchy/i })).toBeInTheDocument();
+      expect(projectFolder).toHaveAttribute('aria-expanded', 'true');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('switches from the refreshed cached catalog without a second discovery request', async () => {
     const user = userEvent.setup();
     const requests: Array<{ url: string; method: string }> = [];

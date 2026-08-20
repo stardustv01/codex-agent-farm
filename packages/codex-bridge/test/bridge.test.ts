@@ -8,6 +8,7 @@ import {
   OutboundMethodDeniedError,
   canonicalObservationKey,
   collectPages,
+  compactChatTitle,
   evaluateAdapterGate,
   generateStableSchemaBundle,
   minimizeFinalSummary,
@@ -107,6 +108,20 @@ test('thread/list accepts only the bounded official sourceKinds enum', async () 
   await client.close();
 });
 
+test('thread/list rejects unsupported sort fields before serialization', async () => {
+  const transport = new InMemoryStdioTransport({
+    onSend: async (line) => {
+      const request = JSON.parse(line) as { id: number };
+      await transport.pushLine(JSON.stringify({ id: request.id, result: { data: [] } }));
+    },
+  });
+  const client = new AppServerClient(transport);
+  await assert.rejects(() => client.call('thread/list', { sortKey: 'recency_at' }), /Outbound params/);
+  await assert.rejects(() => client.call('thread/list', { sortDirection: 'desc' }), /Outbound params/);
+  assert.equal(transport.sentLines.length, 0);
+  await client.close();
+});
+
 test('minimizer exports allowed thread fields and drops prompts, commands, paths, and unknowns', () => {
   const thread = minimizeThread({
     id: 'thread-1',
@@ -161,6 +176,31 @@ test('minimizer falls through a nullable app-server title to the public name', (
   });
 });
 
+test('minimizer compacts long Codex-generated titles to a bounded first-line label', () => {
+  const title = `Review Chai Studio release readiness ${'with evidence '.repeat(20)}\nfull first-message body`;
+  const compact = compactChatTitle(title);
+  assert.ok((compact?.length ?? 0) <= 96);
+  assert.ok((compact?.length ?? 0) >= 90);
+  assert.match(compact ?? '', /^Review Chai Studio release readiness/);
+  assert.match(compact ?? '', /\.\.\.$/);
+  assert.equal(compactChatTitle('api_key=secret'), undefined);
+  assert.equal(minimizeThread({ id: 'thread-long-title', title })?.chatTitle, compact);
+});
+
+test('minimizer skips a private session-path line before the human title', () => {
+  const title = '/Users/navin/.codex/sessions/2026\nplease provide the total token cost';
+  assert.equal(compactChatTitle(title), 'please provide the total token cost');
+  assert.equal(minimizeThread({ id: 'thread-path-prefixed-title', title })?.chatTitle, 'please provide the total token cost');
+});
+
+test('minimizer classifies nested source markers even when sourceKind is null', () => {
+  assert.equal(minimizeThread({
+    id: 'thread-guardian-null-kind',
+    sourceKind: null,
+    source: { subAgent: { other: 'guardian' } },
+  })?.sourceKind, 'subagent');
+});
+
 test('minimizer normalizes bounded Unix seconds, milliseconds, and date strings', () => {
   assert.deepEqual(minimizeThread({
     id: 'thread-time',
@@ -204,6 +244,16 @@ test('minimizer accepts official nullable lineage fields while rejecting a null 
   });
   assert.deepEqual(root, {
     sourceThreadId: 'thread-root',
+    status: 'unknown',
+    sourceKind: 'subagent',
+  });
+
+  assert.deepEqual(minimizeThread({
+    id: 'thread-guardian',
+    parentThreadId: null,
+    source: { subAgent: { other: 'guardian' } },
+  }), {
+    sourceThreadId: 'thread-guardian',
     status: 'unknown',
     sourceKind: 'subagent',
   });

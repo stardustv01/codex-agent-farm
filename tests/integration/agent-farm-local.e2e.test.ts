@@ -859,7 +859,7 @@ test("file-backed durable binding remounts once, isolates a second browser, and 
   assert.equal(claimed.agentSessionId, persistedScope.agentSessionId);
   const claimedStatus = await firstApp.inject({ method: "GET", url: "/api/v1/local/status", headers: { host: claimed.host, cookie: claimed.cookie } });
   assert.equal(claimedStatus.json<{ paired: boolean; activeTask?: unknown }>().paired, true);
-  assert.deepEqual(claimedStatus.json<{ activeTask?: unknown }>().activeTask, { displayName: "Untitled chat · 01", lifecycle: "active" });
+  assert.deepEqual(claimedStatus.json<{ activeTask?: unknown }>().activeTask, { displayName: "Chat · 01", lifecycle: "active" });
   const isolated = await createLocalSession(firstApp, "localhost:8787");
   assert.notEqual(isolated.agentSessionId, persistedScope.agentSessionId);
   const isolatedStatus = await firstApp.inject({ method: "GET", url: "/api/v1/local/status", headers: { host: isolated.host, cookie: isolated.cookie } });
@@ -887,7 +887,7 @@ test("file-backed durable binding remounts once, isolates a second browser, and 
   assert.equal(remounted.agentSessionId, persistedScope.agentSessionId);
   const remountedStatus = await secondApp.inject({ method: "GET", url: "/api/v1/local/status", headers: { host: remounted.host, cookie: remounted.cookie } });
   assert.equal(remountedStatus.json<{ paired: boolean; activeTask?: unknown }>().paired, true);
-  assert.deepEqual(remountedStatus.json<{ activeTask?: unknown }>().activeTask, { displayName: "Untitled chat · 01", lifecycle: "active" });
+  assert.deepEqual(remountedStatus.json<{ activeTask?: unknown }>().activeTask, { displayName: "Chat · 01", lifecycle: "active" });
   const unpair = await secondApp.inject({ method: "POST", url: "/api/v1/local/pairing/unpair", headers: mutationHeaders(remounted), payload: { confirmation: true } });
   assert.equal(unpair.statusCode, 200);
   await secondApp.close();

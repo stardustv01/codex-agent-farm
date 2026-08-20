@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { isSafeLocalDisplayName } from './normalize';
 import { LocalPairingError, provisionLocalPairing, provisionLocalPairingSwitch, provisionLocalStandaloneSession, provisionLocalUnpair, provisionStandaloneSession, refreshLocalFocusState } from './standalone-bootstrap';
 
 function json(value: unknown, status = 200, headers: HeadersInit = {}): Response {
@@ -252,6 +253,12 @@ describe('standalone OAuth bootstrap', () => {
       displayName: 'Investigate Codex review API costs',
       chatTitle: 'Investigate Codex review API costs',
     }]);
+  });
+
+  it('accepts ordinary titles containing code while rejecting credential-shaped labels', () => {
+    expect(isSafeLocalDisplayName('can u please push code to my 2nd github account')).toBe(true);
+    expect(isSafeLocalDisplayName('API key=secret_value')).toBe(false);
+    expect(isSafeLocalDisplayName('Rotate API token')).toBe(false);
   });
 
   it('carries the server-derived active task label and ignores private-looking labels', async () => {

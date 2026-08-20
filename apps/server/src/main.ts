@@ -535,7 +535,10 @@ export async function startServer(environment?: ServerEnvironment): Promise<void
         installationId: config.codexInstallationId,
         ...runtimeAnchors,
         maxLineBytes: CODEX_RUNTIME_MAX_LINE_BYTES,
-        rolloutIdentity: { sessionsRoot: config.codexSessionsRoot },
+        rolloutIdentity: {
+          sessionsRoot: config.codexSessionsRoot,
+          sessionIndexPath: join(dirname(config.codexSessionsRoot), "session_index.jsonl"),
+        },
         reconcilerLimits: {
           listPageSize: CODEX_RECONCILER_PAGE_SIZE,
         },

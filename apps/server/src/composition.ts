@@ -63,6 +63,17 @@ import type {
 import { loadProductionMcpResource } from "./resource-loader.js";
 import { projectPublicHierarchy, publicAgentId } from "./public-hierarchy.js";
 
+const MAX_SOURCE_ROOT_DISCOVERY_PAGES = 5;
+const MAX_SOURCE_ROOT_DISCOVERY_ITEMS = 500;
+const MAX_SOURCE_ROOT_CANDIDATES = 100;
+const SOURCE_ROOT_DISCOVERY_PAGE_SIZE = 100;
+
+function sourceRootActivityTime(value: string | undefined): number {
+  if (value === undefined) return Number.NEGATIVE_INFINITY;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : Number.NEGATIVE_INFINITY;
+}
+
 /**
  * The HTTP layer intentionally depends on narrow ports.  This adapter is the
  * only place where those ports are backed by the durable SQLite projection.
@@ -319,6 +330,7 @@ export interface ReadOnlyCodexBridgeClient {
   readonly listThreads: (params?: JsonObject) => Promise<SanitizedThreadPage>;
   readonly readThread: (params: JsonObject) => Promise<SanitizedThreadRead>;
   readonly listModels: (params?: JsonObject) => Promise<SanitizedModelCatalog>;
+  readonly readChatTitle?: (threadId: string) => Promise<string | undefined>;
   readonly readRolloutLocalDetail?: (threadId: string) => Promise<LocalRolloutDetail | undefined>;
   readonly close?: () => Promise<void>;
 }
@@ -404,35 +416,62 @@ export class ReadOnlyCodexBridgeAdapter implements BridgePort {
     const client = this.requireClient();
     const candidates: SourceRootCandidate[] = [];
     let cursor: string | undefined;
-    for (let pageNumber = 0; pageNumber < 5 && candidates.length < 100; pageNumber += 1) {
+    let inspectedItems = 0;
+    for (
+      let pageNumber = 0;
+      pageNumber < MAX_SOURCE_ROOT_DISCOVERY_PAGES && inspectedItems < MAX_SOURCE_ROOT_DISCOVERY_ITEMS;
+      pageNumber += 1
+    ) {
+      // Keep discovery on the documented state DB path.  The app-server's
+      // optional sort fields are not part of the bridge's stable outbound
+      // surface, so recency ordering is applied after sanitization below.
       const params: JsonObject = {
         archived: false,
-        useStateDbOnly: false,
+        useStateDbOnly: true,
         sourceKinds: CODEX_DISCOVERY_SOURCE_KINDS as unknown as JsonValue,
-        limit: 20,
+        limit: SOURCE_ROOT_DISCOVERY_PAGE_SIZE,
         ...(cursor === undefined ? {} : { cursor }),
       };
       const page = await client.listThreads(params);
       for (const thread of page.threads) {
+        if (inspectedItems >= MAX_SOURCE_ROOT_DISCOVERY_ITEMS) break;
+        inspectedItems += 1;
         // A real Codex root is a thread without a parent. Threads with a
         // parent are subagents and can never be selected as the source root.
         if (thread.parentThreadId !== undefined) continue;
+        // Codex also reports guardian/subagent records with a null parent and
+        // a nested `source.subAgent` marker. They are not user chats and must
+        // never become selectable source roots just because their parent edge
+        // was omitted from the list response.
+        if (thread.sourceKind === "subagent") continue;
+        const activityAt = thread.recencyAt ?? thread.updatedAt;
+        // The app-server metadata is authoritative when present. Codex
+        // Desktop keeps some root titles only in its local session index, so
+        // use that read-only supplement solely for missing titles.
+        const chatTitle = thread.chatTitle ?? await client.readChatTitle?.(thread.sourceThreadId);
         candidates.push({
           sourceRootId: thread.sourceThreadId,
-          ...(thread.chatTitle === undefined ? {} : { chatTitle: thread.chatTitle }),
+          ...(chatTitle === undefined ? {} : { chatTitle }),
           ...(thread.workspaceName === undefined ? {} : { workspaceName: thread.workspaceName }),
           ...(thread.agentNickname === undefined ? {} : { nickname: thread.agentNickname }),
+          ...(thread.agentTaskName === undefined ? {} : { agentTaskName: thread.agentTaskName }),
           ...(thread.agentPath === undefined ? {} : { agentPath: thread.agentPath }),
           status: thread.status,
-          ...(thread.updatedAt === undefined ? {} : { updatedAt: thread.updatedAt }),
+          ...(activityAt === undefined ? {} : { updatedAt: activityAt }),
         });
-        if (candidates.length >= 100) break;
       }
       const nextCursor = page.nextCursor;
-      if (candidates.length >= 100 || nextCursor === undefined || nextCursor === cursor) break;
+      if (inspectedItems >= MAX_SOURCE_ROOT_DISCOVERY_ITEMS || nextCursor === undefined || nextCursor === cursor) break;
       cursor = nextCursor;
     }
-    return candidates;
+    return candidates
+      .sort((left, right) => {
+        const leftActivity = sourceRootActivityTime(left.updatedAt);
+        const rightActivity = sourceRootActivityTime(right.updatedAt);
+        if (rightActivity !== leftActivity) return rightActivity > leftActivity ? 1 : -1;
+        return left.sourceRootId.localeCompare(right.sourceRootId);
+      })
+      .slice(0, MAX_SOURCE_ROOT_CANDIDATES);
   }
 
   async hasActivePairing(input: {

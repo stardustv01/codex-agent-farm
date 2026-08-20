@@ -1354,7 +1354,7 @@ describe("Agent Farm HTTP composition root", () => {
     const body = response.json<{ candidateRoots: Array<Record<string, unknown>> }>();
     expect(body).toEqual(expect.objectContaining({
       sourceRootCount: 1,
-      candidateRoots: [{ selectionHandle: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/u), chatHandle: expect.stringMatching(/^[a-f0-9]{64}$/u), displayName: "Untitled chat · 01", lifecycle: "running" }],
+      candidateRoots: [{ selectionHandle: expect.stringMatching(/^[A-Za-z0-9_-]{43}$/u), chatHandle: expect.stringMatching(/^[a-f0-9]{64}$/u), displayName: "Chat · 01", lifecycle: "running" }],
     }));
     expect(JSON.stringify(body)).not.toContain("root-safe");
     expect(JSON.stringify(body)).not.toContain("agentPath");
@@ -1373,10 +1373,11 @@ describe("Agent Farm HTTP composition root", () => {
         connectionTime: new Date(0).toISOString(),
       },
     };
-    const root = (sourceThreadId: string, parentThreadId?: string): SanitizedThread => ({
+    const root = (sourceThreadId: string, parentThreadId?: string, recencyAt?: string): SanitizedThread => ({
       sourceThreadId,
       status: "active",
       ...(parentThreadId === undefined ? {} : { parentThreadId }),
+      ...(recencyAt === undefined ? {} : { recencyAt }),
     });
     const adapter = new ReadOnlyCodexBridgeAdapter({
       client: {
@@ -1384,8 +1385,8 @@ describe("Agent Farm HTTP composition root", () => {
         async listThreads(params?: JsonObject) {
           calls.push(params ?? {});
           return calls.length === 1
-            ? { threads: [root("root-1"), root("child-1", "root-1")], nextCursor: "page-2" }
-            : { threads: [root("root-2")] };
+            ? { threads: [root("root-1", undefined, "2026-08-10T10:00:00.000Z"), { ...root("guardian-root"), sourceKind: "subagent" }, root("child-1", "root-1")], nextCursor: "page-2" }
+            : { threads: [root("root-2", undefined, "2026-08-11T10:00:00.000Z")] };
         },
         async readThread() {
           return { thread: root("root-1"), turns: [] };
@@ -1396,22 +1397,64 @@ describe("Agent Farm HTTP composition root", () => {
       },
     });
     const roots = await adapter.listSourceRoots();
-    expect(roots.map((candidate) => candidate.sourceRootId)).toEqual(["root-1", "root-2"]);
+    expect(roots.map((candidate) => candidate.sourceRootId)).toEqual(["root-2", "root-1"]);
     expect(calls).toEqual([
       {
         archived: false,
-        useStateDbOnly: false,
+        useStateDbOnly: true,
         sourceKinds: [...CODEX_DISCOVERY_SOURCE_KINDS],
-        limit: 20,
+        limit: 100,
       },
       {
         archived: false,
-        useStateDbOnly: false,
+        useStateDbOnly: true,
         sourceKinds: [...CODEX_DISCOVERY_SOURCE_KINDS],
-        limit: 20,
+        limit: 100,
         cursor: "page-2",
       },
     ]);
+  });
+
+  it("prefers app-server titles and fills missing root titles from the trusted session index", async () => {
+    const calls: JsonObject[] = [];
+    const gate: AdapterGateAccepted = {
+      status: "accepted",
+      adapterVersion: "fixture-v1",
+      schemaVersion: "fixture-schema-v1",
+      fingerprint: {
+        reportedUserAgent: "Codex Desktop/fixture",
+        schemaBundleSha256: "schema",
+        connectionTime: new Date(0).toISOString(),
+      },
+    };
+    const root = (sourceThreadId: string, chatTitle?: string): SanitizedThread => ({
+      sourceThreadId,
+      status: "active",
+      ...(chatTitle === undefined ? {} : { chatTitle }),
+    });
+    const adapter = new ReadOnlyCodexBridgeAdapter({
+      client: {
+        gate,
+        async listThreads(params?: JsonObject) {
+          calls.push(params ?? {});
+          return { threads: [root("root-with-title", "App-server title"), root("root-index-title")] };
+        },
+        async readChatTitle(sourceThreadId: string) {
+          return sourceThreadId === "root-index-title" ? "Codex Desktop title" : "Should not win";
+        },
+        async readThread() {
+          return { thread: root("root-with-title"), turns: [] };
+        },
+        async listModels() {
+          return { models: [] };
+        },
+      },
+    });
+    await expect(adapter.listSourceRoots()).resolves.toEqual(expect.arrayContaining([
+      { sourceRootId: "root-index-title", chatTitle: "Codex Desktop title", status: "active" },
+      { sourceRootId: "root-with-title", chatTitle: "App-server title", status: "active" },
+    ]));
+    expect(calls).toHaveLength(1);
   });
 
   it("does not replace an explicit local-mode bearer with the local principal", async () => {

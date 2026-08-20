@@ -57,7 +57,7 @@ function safeLabel(value: unknown): string | undefined {
   return stringValue(value, SAFE_LABEL);
 }
 
-function safeDisplayText(value: unknown, max = MAX_CHAT_TITLE_CHARS): string | undefined {
+export function sanitizeChatTitle(value: unknown, max = MAX_CHAT_TITLE_CHARS): string | undefined {
   if (typeof value !== 'string') return undefined;
   const normalized = value.normalize('NFKC').replace(/\s+/gu, ' ').trim();
   if (normalized.length === 0 || normalized.length > max) return undefined;
@@ -68,9 +68,29 @@ function safeDisplayText(value: unknown, max = MAX_CHAT_TITLE_CHARS): string | u
   return normalized;
 }
 
-function firstSafeDisplayText(record: Record<string, unknown>, keys: readonly string[], max = MAX_CHAT_TITLE_CHARS): string | undefined {
+/**
+ * Keep a long Codex-generated title useful without copying the whole first
+ * message into the public projection. The first safe non-empty line is the
+ * compact signal the desktop chat list presents; all normal title checks are
+ * still applied after truncation.
+ */
+export function compactChatTitle(value: unknown, max = MAX_CHAT_TITLE_CHARS): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.normalize('NFKC').replace(/\r\n?/gu, '\n').trim();
+  for (const line of normalized.split('\n').map((candidate) => candidate.trim()).filter(Boolean)) {
+    const bounded = line.length > max ? `${line.slice(0, Math.max(1, max - 3)).trimEnd()}...` : line;
+    // Some imported Codex records put a private session path or transport
+    // marker on line one and the human title on the next line. Skip only the
+    // rejected line; never copy the unsafe metadata into the public label.
+    const safe = sanitizeChatTitle(bounded, max);
+    if (safe !== undefined) return safe;
+  }
+  return undefined;
+}
+
+function firstCompactDisplayText(record: Record<string, unknown>, keys: readonly string[], max = MAX_CHAT_TITLE_CHARS): string | undefined {
   for (const key of keys) {
-    const value = safeDisplayText(record[key], max);
+    const value = sanitizeChatTitle(record[key], max) ?? compactChatTitle(record[key], max);
     if (value !== undefined) return value;
   }
   return undefined;
@@ -79,7 +99,7 @@ function firstSafeDisplayText(record: Record<string, unknown>, keys: readonly st
 function workspaceBasename(value: unknown): string | undefined {
   if (typeof value !== 'string' || value.length === 0 || value.length > 4_096 || value.includes('\0')) return undefined;
   const segments = value.replaceAll('\\', '/').split('/').filter(Boolean);
-  return safeDisplayText(segments.at(-1), 64);
+  return sanitizeChatTitle(segments.at(-1), 64);
 }
 
 function timestamp(value: unknown): string | undefined {
@@ -287,6 +307,7 @@ function turnStatus(value: unknown): BridgeTurnStatus {
 }
 
 function sourceKind(value: unknown): BridgeSourceKind | undefined {
+  if (isRecord(value) && getFirst(value, 'subAgent', 'subagent', 'sub_agent') !== undefined) return 'subagent';
   const text = typeof value === 'string' ? value.toLowerCase() : isRecord(value) ? String(getFirst(value, 'type', 'kind') ?? '').toLowerCase() : '';
   switch (text) {
     case 'cli':
@@ -527,10 +548,10 @@ export function minimizeThread(raw: unknown): SanitizedThread | undefined {
 
   const result: Record<string, unknown> = { sourceThreadId, status: lifecycleStatus(getFirst(raw, 'status', 'state')) };
   const fields: Array<[keyof SanitizedThread, string | undefined]> = [
-    // Current app-server roots may expose `title: null` beside the real public
-    // title in `name`. Validate each alias independently so a nullable earlier
-    // field cannot suppress a later valid title on every discovery refresh.
-    ['chatTitle', nested.spawns.length === 0 ? firstSafeDisplayText(raw, ['title', 'name']) : undefined],
+    // Current app-server roots may expose `title: null` beside the public
+    // label in `name` or a bounded `preview`. Validate each alias independently
+    // so a nullable earlier field cannot suppress a later valid title.
+    ['chatTitle', nested.spawns.length === 0 ? firstCompactDisplayText(raw, ['title', 'name', 'preview']) : undefined],
     ['workspaceName', nested.spawns.length === 0 ? workspaceBasename(raw.cwd) ?? workspaceBasename(raw.workingDirectory) : undefined],
     ['modelProvider', safeWord(getFirst(raw, 'modelProvider', 'provider'))],
     ['cliVersion', safeWord(getFirst(raw, 'cliVersion', 'version'))],
@@ -551,7 +572,11 @@ export function minimizeThread(raw: unknown): SanitizedThread | undefined {
   for (const [key, value] of fields) {
     if (value !== undefined) result[key] = value;
   }
-  const kind = sourceKind(getFirst(raw, 'sourceKind', 'source', 'threadSource'));
+  // Some app-server rows include `sourceKind: null` beside the authoritative
+  // nested source object. Skip null aliases so guardian/subagent records are
+  // still classified and cannot become selectable roots.
+  const sourceValue = [raw.sourceKind, raw.source, raw.threadSource].find((value) => value !== undefined && value !== null);
+  const kind = sourceKind(sourceValue);
   if (nested.spawns.length > 0) result.sourceKind = 'subagent';
   else if (kind !== undefined) result.sourceKind = kind;
   return result as unknown as SanitizedThread;

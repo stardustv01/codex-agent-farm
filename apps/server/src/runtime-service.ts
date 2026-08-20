@@ -397,6 +397,7 @@ export class CodexRuntimeService {
       listThreads: client.listThreads,
       readThread: client.readThread,
       listModels: client.listModels,
+      readChatTitle: (threadId) => localRollout.readChatTitle(threadId),
       readRolloutIdentity: (threadId) => localRollout.readIdentity(threadId),
       readRolloutLocalDetail: (threadId) => localRollout.readDetail(threadId),
     };
