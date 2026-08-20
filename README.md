@@ -9,11 +9,12 @@ data to an Agent Farm cloud service, change Codex settings, or control agents.
 
 ## Demo
 
-[![Watch the 29-second Codex Agent Farm demo](docs/assets/agent-farm-demo-poster.jpg)](docs/assets/agent-farm-demo.mp4)
+[![Watch the 29-second Codex Agent Farm demo](docs/assets/agent-farm-demo-preview.gif)](docs/assets/agent-farm-demo.mp4)
 
-Watch the [29-second demo](docs/assets/agent-farm-demo.mp4) to see live hierarchy
-monitoring, model and effort identity checks, lifecycle and cost details, light
-and dark themes, and task switching.
+The preview plays automatically on GitHub. Open the [full 29-second demo](docs/assets/agent-farm-demo.mp4)
+for audio and full resolution. It shows live hierarchy monitoring, model and
+effort identity checks, lifecycle and cost details, light and dark themes, and
+task switching.
 
 ## Requirements
 
