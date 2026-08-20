@@ -122,7 +122,9 @@ test("build source manifest excludes generated dist and dependency trees", () =>
   assert.equal(files.some((path) => /(?:^|\/)(?:dist|node_modules)\//u.test(path)), false);
   const rootPackage = files.find((path) => path === `${repoRoot.replaceAll("\\", "/")}/package.json`);
   assert.ok(rootPackage);
-  assert.equal(readFileSync(rootPackage, "utf8").includes('"packageManager": "pnpm@11.16.0"'), true);
+  const packageMetadata = JSON.parse(readFileSync(rootPackage, "utf8"));
+  assert.match(packageMetadata.packageManager, /^pnpm@/u);
+  assert.equal(versionAtLeast(packageMetadata.packageManager.slice("pnpm@".length), "11.16.0"), true);
 });
 
 test("guarded cleanup removes only a marked isolated directory", () => {

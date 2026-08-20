@@ -1,8 +1,8 @@
 # Agent Farm 0.1 release status
 
-Status: **published on npm; source-control release in progress**
+Status: **version 0.1.1 published on npm; source-control release complete**
 
-`codex-agent-farm@0.1.0` is publicly available from npm for macOS. The package
+`codex-agent-farm@0.1.1` is publicly available from npm for macOS. The package
 uses the Apache-2.0 license and installs the `agent-farm` executable. Cloud
 hosting, public ingress, and a remote Agent Farm account remain out of scope.
 
@@ -13,13 +13,13 @@ registry state.
 
 ## Verified distribution boundary
 
-- Package: `codex-agent-farm@0.1.0`
+- Package: `codex-agent-farm@0.1.1`
 - Platform: macOS (`darwin`)
 - License: Apache-2.0
 - Runtime: local-only, bound to `127.0.0.1`
 - Codex boundary: read-only monitoring; no agent control or Codex configuration
   mutation
-- Update boundary: v0.1.0 has no signed automatic-update channel; install an
+- Update boundary: v0.1.1 has no signed automatic-update channel; install an
   explicitly selected npm version instead
 
 The exact package acceptance procedure and permissions are documented in

@@ -21,7 +21,7 @@ and dark themes, and task switching.
 - Node.js 22.17.0 or newer
 - Codex CLI 0.145.0 at `~/.local/bin/codex`
 
-Version 0.1.0 is pinned to that exact Codex CLI release and verifies its binary
+Version 0.1.1 is pinned to that exact Codex CLI release and verifies its binary
 before installation. `agent-farm install` stops safely if the prerequisite does
 not match.
 

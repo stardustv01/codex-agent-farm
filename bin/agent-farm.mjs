@@ -167,7 +167,7 @@ async function main() {
   else if (command === "status") console.log(JSON.stringify({ version: metadata.version, running: await health(), url, stateRoot }, null, 2));
   else if (command === "stop") await stop();
   else if (command === "open") { if (!(await health())) throw new Error("Agent Farm is not running. Run: agent-farm start"); const child = spawn("open", [url], { detached: true, stdio: "ignore" }); child.unref(); console.log(`Opened ${url}`); }
-  else if (command === "update") fail("Automatic update is not available in Agent Farm 0.1.0. Install an explicitly selected npm version instead.", 2);
+  else if (command === "update") fail(`Automatic update is not available in Agent Farm ${metadata.version}. Install an explicitly selected npm version instead.`, 2);
   else if (command === "uninstall") { await stop(); console.log(`Runtime stopped. Private data was preserved at ${stateRoot}. Remove the npm package explicitly after backing up or deleting that directory.`); }
   else { console.log("Usage: agent-farm <install|doctor|start|open|status|stop|update|uninstall>\n\nLocal-only. No cloud account, sudo, or generic MCP registration is required."); if (command !== "help" && command !== "--help" && command !== "-h") process.exitCode = 1; }
 }

@@ -1,6 +1,6 @@
 # Local CLI installation and permissions
 
-Status: **version 0.1.0 published on npm for macOS**
+Status: **version 0.1.1 published on npm for macOS**
 
 This document is the authority for Agent Farm's local distribution boundary.
 Agent Farm is installed with a CLI, runs on the user's machine, and exposes a
@@ -22,9 +22,9 @@ agent-farm update      verify and install an explicitly selected release
 agent-farm uninstall   stop, unpair, preserve/export data if requested, remove owned files
 ```
 
-The exact 0.1.0 package passed clean-install acceptance and is publicly
+The exact 0.1.1 package passed clean-install acceptance and is publicly
 available from npm as `codex-agent-farm`. The license is Apache-2.0.
-`agent-farm update` remains intentionally disabled because v0.1.0 has no signed
+`agent-farm update` remains intentionally disabled because v0.1.1 has no signed
 automatic-update channel; install an explicitly selected npm version instead.
 
 ## Installation approvals

@@ -1,6 +1,6 @@
 # Agent Farm local implementation (single active chat)
 
-Status: **IMPLEMENTED, LOCALLY ACCEPTED, AND INCLUDED IN NPM 0.1.0**
+Status: **IMPLEMENTED, LOCALLY ACCEPTED, AND INCLUDED IN NPM 0.1.1**
 
 The earlier single-task Live Task Map plan is preserved at
 [`archive/superseded-live-task-map-ui-plan-2026-08-13/LIVE_TASK_MAP_UI_IMPLEMENTATION_PLAN.md`](archive/superseded-live-task-map-ui-plan-2026-08-13/LIVE_TASK_MAP_UI_IMPLEMENTATION_PLAN.md).
@@ -38,6 +38,6 @@ The earlier runtime isolation fixture retained two simultaneously active chat
 bindings; that multi-chat behavior was superseded by the single-active-chat
 model, which deactivates the previous binding on switch.
 
-This implementation was included in the npm 0.1.0 publication. That registry
+This implementation was included in the npm 0.1.1 publication. That registry
 publication does not retroactively establish a Git commit or tag, and hosted
 deployment remains outside the product boundary.
